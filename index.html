@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="style.css">
+  <title>vue-firebase-chat</title>
+</head>
+<body>
+  <div id="app">
+    <section class="section-login-before" v-if="!uid">
+      <input type="text" placeholder="Email" v-model="email">
+      <input type="password" placeholder="Password" v-model="password" @keyup.enter="loginWithInfo">
+      <button class="btn btn-sm" @click.prevent="loginWithInfo">Login</button>
+      <button class="btn btn-sm right" @click.prevent="createWithInfo">Join</button>
+      <button class="btn btn-google" @click.prevent="loginWithGoogle">Google Login</button>
+    </section>
+
+    <section class="section-login-after" v-else>
+      <div class="btn-area">
+        <button @click.prevent="user_list_show = !user_list_show">User List</button>
+        <button class="right" @click.prevent="signOut">Logout</button>
+      </div>
+      <div class="chat-area">
+        <div class="chat" v-for="(value, key) in chat" :key="chat.id" :class="{ right: value.uid === uid}">
+          <div class="msg" v-if="value.msg">
+            <pre>{{ value.msg }}</pre>
+          </div>
+          <div class="meta">
+            {{ value.datetime }}
+            <br/> {{ value.email }}
+          </div>
+        </div>
+      </div>
+      
+      <div class="msg-area">
+        <textarea v-model="msg"
+          @keypress.enter.prevent="_chat"
+          @keypress.ctrl.enter="newLine"
+          placeholder=" Please enter your message."
+        ></textarea>
+        <button class="btn-msg right" @click.prevent="_chat">Send</button>
+      </div>
+
+      <div class="user-list" :class="{ show: user_list_show }">
+        <div class="user" v-for="(value, key) in users" :key="users.key" :class="{ login: value.isLogin }">
+          {{ value.email }} - {{ value.updatedAt }}
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/5.4.1/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyDzHApSp7g6nztdCD18iJQe3nRPIir6BUA",
+      authDomain: "vue-firebase-chat-d3410.firebaseapp.com",
+      databaseURL: "https://vue-firebase-chat-d3410.firebaseio.com",
+      projectId: "vue-firebase-chat-d3410",
+      storageBucket: "",
+      messagingSenderId: "346511085265"
+    };
+    firebase.initializeApp(config);
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  <script>
+    const chat_ref = firebase.database().ref('chat');
+    const users_ref = firebase.database().ref('users');
+
+    new Vue({
+      el: '#app',
+      data: {
+        uid: '',
+        email: '',
+        password: '',
+        msg: '',
+        chat: {},
+        users: {},
+        user_list_show: false
+      },
+      methods: {
+        loginWithInfo() {
+          const self = this;
+          if (this.loginExceptionHandler()) return true;
+
+          return firebase.auth().signInWithEmailAndPassword(this.email, this.password)
+            .catch(err => {
+              alert(`error: ${err.message}`);
+            })
+        },
+        loginWithGoogle() {
+          const self = this;
+          const provider = new firebase.auth.GoogleAuthProvider();
+
+          firebase.auth().signInWithPopup(provider)
+            .catch(err => {
+              alert(`error: ${err.message}`);
+            });
+        },
+        loginExceptionHandler() {
+          if (this.email === "" || this.password === "") {
+            alert("Enter the email and password");
+            return true;
+          }
+          return false;
+        },
+        createWithInfo() {
+          return firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
+            .catch(err => {
+              alert(`error: ${err.message}`);
+            })
+        },
+        signOut() {
+          const self = this;
+          firebase.auth().signOut()
+            .catch(err => {
+              alert(`error: ${err.message}`);
+            });
+        },
+        _chat() {
+          if (!this.msg || event.ctrlKey) return;          
+          chat_ref.push({
+            uid: this.uid,
+            msg: this.msg,
+            email: this.email,
+            datetime: Date()
+          });
+          this.msg = '';
+          this.set_scroll_to_bottom();
+        },
+        clearForm() {
+          this.email = "";
+          this.password = "";
+        },
+        newLine() {
+          this.msg += '\n';
+        },
+        set_scroll_to_bottom() {
+          const el = this.$el.querySelector('.chat-area');
+          el.scrollTop = el.scrollHeight;
+        }
+      },
+      created() {
+        const self = this;
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            self.uid = user.uid;
+            self.email = user.email;
+
+            chat_ref.on('child_added', cur => {
+              Vue.set(self.chat, cur.key, cur.val());
+              Vue.nextTick(self.set_scroll_to_bottom);
+            });
+
+            users_ref.on('child_added', cur => {
+              Vue.set(self.users, cur.key, cur.val());
+              Vue.nextTick();
+            });
+
+            users_ref.on('child_changed', cur => {
+              Vue.set(self.users, cur.key, cur.val());
+              Vue.nextTick();
+            });
+
+            users_ref.child(self.uid).once('value', cur => {
+              if (cur.val()) {
+                users_ref.child(self.uid).update({
+                  updatedAt: Date(),
+                  isLogin: true
+                })
+              } else {
+                users_ref.child(self.uid).set({
+                  email: self.email,
+                  createdAt: Date(),
+                  updatedAt: Date(),
+                  isLogin: true
+                });
+              }
+            })
+          } else {
+            self.uid = '';
+          }
+        });
+      }
+    })
+  </script>
+</body>
+</html>

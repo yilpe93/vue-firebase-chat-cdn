@@ -1,0 +1,189 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  background: gainsboro;
+}
+
+a, button, input, textarea {
+  outline: none;
+}
+
+button {
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+textarea {
+  border: none;
+}
+
+/* common */
+.right {
+  float: right;
+}
+
+/* app */
+#app {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Login Before */
+.section-login-before {
+  width: 70%;
+}
+
+.section-login-before input {
+  display: block;
+  width: 100%;
+  height: 35px;
+  padding: 6px 10px; 
+  margin-bottom: 10px;
+}
+
+.section-login-before button {
+  width: 48%;
+  height: 35px;
+  line-height: 35px;
+  background: #fff;
+}
+
+.section-login-before button.right {
+  color: #fff;
+  background-color: #448aff; 
+}
+
+.section-login-before button.btn-google {
+  display: block;
+  width: 100%;
+  margin-top :6px;
+  color: #fff;
+  background-color: #ff5252;
+}
+
+/* Login After */
+.section-login-after {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.btn-area, .file-area {
+  height: 55px;
+  padding: 10px;
+  background: #666;
+}
+
+.btn-area button, .file-area button {
+  height: 35px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+.file-area {
+  line-height: 35px;
+  color: #fff;
+}
+
+.file-area input[type="file"] {
+  display: none;
+}
+
+.chat-area {
+  height: calc(100% - 175px);
+  overflow-y: auto;
+}
+
+.chat-area .chat {
+  display: flex;
+  justify-content: flex-start;
+  align-items: self-end;
+}
+
+.chat-area .chat.right {
+  flex-direction: row-reverse;
+}
+
+.chat-area .chat .msg {
+  max-width: 60%;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 2px;
+  background: #fff;
+}
+
+.chat-area .chat .msg pre{
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.chat-area .chat.right .msg {
+  max-width: 60%;
+  margin: 10px;
+  padding: 10px;
+  background: #fdff00;
+}
+
+.chat-area .meta {
+  font-size: 9px;
+  color: #777;
+  margin-top: 15px;
+}
+
+.msg-area {
+  height: 120px;
+}
+
+.msg-area textarea {
+  width: calc(100% - 120px);
+  height: 120px;
+  padding: 10px;
+  font-size: 14px;
+  vertical-align: bottom;
+}
+
+.msg-area button {
+  width: 120px;
+  height: 120px;
+  line-height: 120px;
+  text-align: center;
+  font-weight: bold;
+  color: #fff;
+  background: #ff5252
+}
+
+/* User List */
+.user-list {
+  position: absolute;
+  top: 55px;
+  left: -2000px;
+  width: calc(100% - 120px);
+  height: calc(100% - 175px);
+  overflow: auto;
+  background: #fff;
+  transition: all .5s ease-out;
+  z-index: 100;
+}
+
+.user-list.show {
+  left: 0;
+}
+
+.user-list.show .user {
+  padding: 10px;
+  font-size: 12px;
+  color: #992;
+}
+
+.user-list.show .user.login {
+  color: #000;
+}
